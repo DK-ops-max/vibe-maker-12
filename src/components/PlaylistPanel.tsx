@@ -1,4 +1,4 @@
-import { Music, Trash2, Play } from "lucide-react";
+import { Music, Trash2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Song } from "@/types/music";
@@ -6,9 +6,11 @@ import { Song } from "@/types/music";
 interface PlaylistPanelProps {
   playlist: Song[];
   onRemoveFromPlaylist: (songId: number) => void;
+  onGeneratePlaylists: () => void;
+  isGenerating?: boolean;
 }
 
-export const PlaylistPanel = ({ playlist, onRemoveFromPlaylist }: PlaylistPanelProps) => {
+export const PlaylistPanel = ({ playlist, onRemoveFromPlaylist, onGeneratePlaylists, isGenerating = false }: PlaylistPanelProps) => {
   const totalDuration = playlist.reduce((acc, song) => acc + song.trackTimeMillis, 0);
   
   const formatTotalDuration = (milliseconds: number) => {
@@ -89,10 +91,30 @@ export const PlaylistPanel = ({ playlist, onRemoveFromPlaylist }: PlaylistPanelP
       )}
 
       {playlist.length > 0 && (
-        <Button className="w-full mt-4 bg-gradient-primary hover:shadow-glow transition-smooth">
-          <Play className="w-4 h-4 mr-2" />
-          Play Playlist
-        </Button>
+        <div className="space-y-3 mt-4">
+          <Button className="w-full bg-gradient-primary hover:shadow-glow transition-smooth">
+            <Play className="w-4 h-4 mr-2" />
+            Play Playlist
+          </Button>
+          
+          <Button 
+            onClick={onGeneratePlaylists}
+            disabled={isGenerating}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate AI Playlists
+              </>
+            )}
+          </Button>
+        </div>
       )}
     </Card>
   );

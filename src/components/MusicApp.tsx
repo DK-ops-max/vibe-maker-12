@@ -1,15 +1,19 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 import { SongCard } from "./SongCard";
 import { PlaylistPanel } from "./PlaylistPanel";
 import { Song, SearchResponse } from "@/types/music";
 import { useToast } from "@/hooks/use-toast";
+import { generatePlaylistsAPI } from "@/api/generate-playlists";
 
 export const MusicApp = () => {
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [playlist, setPlaylist] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const searchSongs = async (query: string) => {
     setIsLoading(true);
@@ -63,6 +67,39 @@ export const MusicApp = () => {
 
   const isInPlaylist = (songId: number) => {
     return playlist.some(song => song.trackId === songId);
+  };
+
+  const generatePlaylists = async () => {
+    if (playlist.length === 0) {
+      toast({
+        title: "No songs selected",
+        description: "Add some songs to your playlist first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const likedSongs = playlist.map(song => `${song.artistName} - ${song.trackName}`);
+      const generatedPlaylists = await generatePlaylistsAPI(likedSongs);
+      
+      navigate('/playlists', { state: { playlists: generatedPlaylists } });
+      
+      toast({
+        title: "Playlists generated!",
+        description: "Your AI-powered playlists are ready",
+      });
+    } catch (error) {
+      console.error("Error generating playlists:", error);
+      toast({
+        title: "Generation failed",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -128,6 +165,8 @@ export const MusicApp = () => {
             <PlaylistPanel
               playlist={playlist}
               onRemoveFromPlaylist={removeFromPlaylist}
+              onGeneratePlaylists={generatePlaylists}
+              isGenerating={isGenerating}
             />
           </div>
         </div>
