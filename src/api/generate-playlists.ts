@@ -1,21 +1,14 @@
-// This would be an edge function in a real Supabase setup
-// For now, we'll create a mock implementation
-
 import { GeneratedPlaylist } from "@/types/music";
+import { generatePlaylistsWithOpenAI } from "@/services/openai";
 
 export const generatePlaylistsAPI = async (likedSongs: string[]): Promise<GeneratedPlaylist[]> => {
-  // Mock OpenAI API call
-  const prompt = `Based on these liked songs: ${likedSongs.join(', ')}, 
-  generate 5 playlists with 25+ songs each for these categories:
-  - Mix: A diverse mix based on the user's taste
-  - Focus: Concentration and work music
-  - Motivation: Upbeat and inspiring tracks
-  - Emotional: Deep, meaningful, and emotional songs
-  - Workout: High-energy exercise music
-  
-  Return songs in "Artist - Song Name" format.`;
-
-  // Mock response - in production, this would call OpenAI API
+  try {
+    // Use real OpenAI API
+    return await generatePlaylistsWithOpenAI(likedSongs);
+  } catch (error) {
+    console.error('OpenAI API failed, using fallback:', error);
+    
+    // Fallback to mock data if OpenAI fails
   const mockPlaylists: GeneratedPlaylist[] = [
     {
       category: 'Mix',
@@ -169,8 +162,9 @@ export const generatePlaylistsAPI = async (likedSongs: string[]): Promise<Genera
     }
   ];
 
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  return mockPlaylists;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    return mockPlaylists;
+  }
 };

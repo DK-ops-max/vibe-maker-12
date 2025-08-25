@@ -48,11 +48,20 @@ export const MusicApp = () => {
   };
 
   const addToPlaylist = (song: Song) => {
+    if (playlist.length >= 10) {
+      toast({
+        title: "Maximum songs reached",
+        description: "You can only select up to 10 songs for the test",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!playlist.some(p => p.trackId === song.trackId)) {
       setPlaylist(prev => [...prev, song]);
       toast({
-        title: "Added to playlist",
-        description: `"${song.trackName}" by ${song.artistName}`,
+        title: "Added to test",
+        description: `"${song.trackName}" by ${song.artistName} (${playlist.length + 1}/10)`,
       });
     }
   };
@@ -70,10 +79,19 @@ export const MusicApp = () => {
   };
 
   const generatePlaylists = async () => {
-    if (playlist.length === 0) {
+    if (playlist.length < 5) {
       toast({
-        title: "No songs selected",
-        description: "Add some songs to your playlist first",
+        title: "Need more songs",
+        description: "Please select at least 5 songs to analyze your taste",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (playlist.length > 10) {
+      toast({
+        title: "Too many songs",
+        description: "Please select no more than 10 songs for the best results",
         variant: "destructive",
       });
       return;
@@ -110,11 +128,14 @@ export const MusicApp = () => {
         <div className="relative max-w-7xl mx-auto px-4 py-12">
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
-              Music Discovery
+              Music Taste Test
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Search millions of songs and create your perfect playlist
+              Select 5-10 songs you love and let AI create personalized playlists for you
             </p>
+            <div className="mt-4 text-sm text-muted-foreground">
+              Selected: {playlist.length}/10 songs {playlist.length >= 5 && playlist.length <= 10 && "✓ Ready to generate!"}
+            </div>
           </div>
           
           <SearchBar onSearch={searchSongs} isLoading={isLoading} />
@@ -148,13 +169,13 @@ export const MusicApp = () => {
               </>
             ) : (
               <div className="text-center py-20">
-                <div className="text-6xl mb-4">🎵</div>
+                <div className="text-6xl mb-4">🎧</div>
                 <h3 className="text-2xl font-semibold text-foreground mb-2">
-                  Discover Amazing Music
+                  Take Your Music Taste Test
                 </h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Use the search bar above to find your favorite songs, artists, and albums.
-                  Build your perfect playlist!
+                  Search for songs you absolutely love and select 5-10 of them. 
+                  Our AI will analyze your taste and create personalized playlists for different moods!
                 </p>
               </div>
             )}
