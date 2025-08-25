@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 import { SongCard } from "./SongCard";
 import { PlaylistPanel } from "./PlaylistPanel";
+import { CookieConsent } from "./CookieConsent";
+import { LogoPlaceholder } from "./LogoPlaceholder";
 import { Song, SearchResponse } from "@/types/music";
 import { useToast } from "@/hooks/use-toast";
 import { generatePlaylistsAPI } from "@/api/generate-playlists";
 import { Button } from "./ui/button";
-import { Music, Play, Sparkles, Headphones } from "lucide-react";
+import { Music, Play, Sparkles, Headphones, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 export const MusicApp = () => {
   const [searchResults, setSearchResults] = useState<Song[]>([]);
@@ -15,8 +19,56 @@ export const MusicApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showTest, setShowTest] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [showCookieConsent, setShowCookieConsent] = useState(false);
+  const [cookiesAccepted, setCookiesAccepted] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    // Check cookie consent
+    const consent = localStorage.getItem('loomi-cookie-consent');
+    if (consent === 'accepted') {
+      setCookiesAccepted(true);
+      loadPlaylistFromCookies();
+    }
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadPlaylistFromCookies = () => {
+    if (cookiesAccepted) {
+      const savedPlaylist = localStorage.getItem('loomi-playlist');
+      if (savedPlaylist) {
+        try {
+          setPlaylist(JSON.parse(savedPlaylist));
+        } catch (error) {
+          console.error('Error loading playlist from cookies:', error);
+        }
+      }
+    }
+  };
+
+  const savePlaylistToCookies = (updatedPlaylist: Song[]) => {
+    if (cookiesAccepted) {
+      localStorage.setItem('loomi-playlist', JSON.stringify(updatedPlaylist));
+    }
+  };
 
   const searchSongs = async (query: string) => {
     setIsLoading(true);
@@ -61,16 +113,20 @@ export const MusicApp = () => {
     }
     
     if (!playlist.some(p => p.trackId === song.trackId)) {
-      setPlaylist(prev => [...prev, song]);
+      const updatedPlaylist = [...playlist, song];
+      setPlaylist(updatedPlaylist);
+      savePlaylistToCookies(updatedPlaylist);
       toast({
         title: "Added to test",
-        description: `"${song.trackName}" by ${song.artistName} (${playlist.length + 1}/10)`,
+        description: `"${song.trackName}" by ${song.artistName} (${updatedPlaylist.length}/10)`,
       });
     }
   };
 
   const removeFromPlaylist = (songId: number) => {
-    setPlaylist(prev => prev.filter(song => song.trackId !== songId));
+    const updatedPlaylist = playlist.filter(song => song.trackId !== songId);
+    setPlaylist(updatedPlaylist);
+    savePlaylistToCookies(updatedPlaylist);
     toast({
       title: "Removed from playlist",
       description: "Song removed successfully",
@@ -79,6 +135,45 @@ export const MusicApp = () => {
 
   const isInPlaylist = (songId: number) => {
     return playlist.some(song => song.trackId === songId);
+  };
+
+  const handleTakeTest = () => {
+    if (!user && !cookiesAccepted) {
+      setShowCookieConsent(true);
+    } else {
+      setShowTest(true);
+    }
+  };
+
+  const handleSignIn = () => {
+    navigate('/auth');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out",
+        description: "You've been signed out successfully",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleCookieAccept = () => {
+    setCookiesAccepted(true);
+    setShowCookieConsent(false);
+    setShowTest(true);
+    loadPlaylistFromCookies();
+  };
+
+  const handleCookieDecline = () => {
+    setShowCookieConsent(false);
+    toast({
+      title: "Cookies declined",
+      description: "You can still use the app, but your selections won't be saved",
+    });
   };
 
   const generatePlaylists = async () => {
@@ -131,17 +226,39 @@ export const MusicApp = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
           <div className="wave-animation absolute inset-0 opacity-20"></div>
           <div className="equalizer-glow absolute inset-0 opacity-30"></div>
+          <div className="sound-waves absolute inset-0 opacity-10"></div>
         </div>
 
         {/* Header with Logo */}
         <div className="relative z-10">
           <div className="flex items-center justify-between p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                <Music className="w-6 h-6 text-white" />
-              </div>
+              <LogoPlaceholder className="w-10 h-10" />
               <span className="text-2xl font-bold text-foreground">Loomi</span>
             </div>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Welcome back!</span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSignIn}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Hero Section */}
@@ -150,7 +267,7 @@ export const MusicApp = () => {
               <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-10 h-10 text-primary" />
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
+              <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight font-display">
                 Playlists that feel what you{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">feel</span>
               </h1>
@@ -160,7 +277,7 @@ export const MusicApp = () => {
             </div>
 
             <Button 
-              onClick={() => setShowTest(true)}
+              onClick={handleTakeTest}
               size="lg"
               className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-glow transition-all duration-300 hover:scale-105 mb-4"
             >
@@ -221,18 +338,23 @@ export const MusicApp = () => {
         <div className="relative max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                <Music className="w-5 h-5 text-white" />
-              </div>
+              <LogoPlaceholder className="w-8 h-8" />
               <span className="text-xl font-bold text-foreground">Loomi</span>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowTest(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              ← Back to Home
-            </Button>
+            <div className="flex items-center gap-4">
+              {user && (
+                <span className="text-sm text-muted-foreground">
+                  Signed in as {user.email}
+                </span>
+              )}
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTest(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ← Back to Home
+              </Button>
+            </div>
           </div>
           
           <div className="text-center mb-8">
@@ -301,6 +423,14 @@ export const MusicApp = () => {
           </div>
         </div>
       </div>
+
+      {/* Cookie Consent */}
+      {showCookieConsent && (
+        <CookieConsent 
+          onAccept={handleCookieAccept}
+          onDecline={handleCookieDecline}
+        />
+      )}
     </div>
   );
 };

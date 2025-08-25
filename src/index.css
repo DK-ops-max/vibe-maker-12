@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
 /* Music-focused design system with dark theme and vibrant gradients */
 
 @layer base {
@@ -177,6 +180,44 @@
     100% {
       opacity: 0.6;
       transform: scale(1.05);
+    }
+  }
+
+  .sound-waves {
+    background: linear-gradient(
+      45deg,
+      transparent 0%,
+      hsl(280 100% 65% / 0.05) 10%,
+      transparent 20%,
+      hsl(315 100% 70% / 0.05) 30%,
+      transparent 40%,
+      hsl(280 100% 65% / 0.05) 50%,
+      transparent 60%,
+      hsl(315 100% 70% / 0.05) 70%,
+      transparent 80%,
+      hsl(280 100% 65% / 0.05) 90%,
+      transparent 100%
+    );
+    background-size: 200% 200%;
+    animation: waveFlow 10s ease-in-out infinite;
+  }
+
+  @keyframes waveFlow {
+    0%, 100% {
+      background-position: 0% 0%;
+      transform: translateX(-20px);
+    }
+    25% {
+      background-position: 50% 25%;
+      transform: translateX(0px);
+    }
+    50% {
+      background-position: 100% 50%;
+      transform: translateX(20px);
+    }
+    75% {
+      background-position: 50% 75%;
+      transform: translateX(0px);
     }
   }
 }
