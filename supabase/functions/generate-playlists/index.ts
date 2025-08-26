@@ -66,7 +66,7 @@ function detectGenre(songName: string, artistName: string): string {
     'rock': ['rock', 'metal', 'guitar', 'band', 'linkin', 'coldplay', 'imagine dragons', 'maroon'],
     'hip-hop': ['hip hop', 'rap', 'drake', 'kendrick', 'eminem', 'kanye', 'travis', 'post malone'],
     'electronic': ['electronic', 'edm', 'dance', 'techno', 'house', 'calvin harris', 'david guetta'],
-    'r&b': ['r&b', 'soul', 'beyonce', 'john legend', 'alicia keys', 'usher', 'chris brown'],
+    'rnb': ['r&b', 'soul', 'beyonce', 'john legend', 'alicia keys', 'usher', 'chris brown'],
     'indie': ['indie', 'alternative', 'arctic monkeys', 'vampire weekend', 'tame impala'],
     'classical': ['classical', 'orchestra', 'symphony', 'piano', 'violin', 'bach', 'mozart'],
     'jazz': ['jazz', 'blues', 'swing', 'saxophone', 'trumpet', 'ella fitzgerald', 'louis armstrong'],
@@ -120,7 +120,7 @@ const songDatabase = {
       "Drake - God's Plan", "Kendrick Lamar - HUMBLE.", "Eminem - Lose Yourself", "Post Malone - White Iverson",
       "Travis Scott - SICKO MODE", "Drake - In My Feelings", "Kendrick Lamar - DNA.", "Eminem - Without Me"
     ],
-    r&b: [
+    'rnb': [
       "John Legend - All of Me", "Beyoncé - Crazy in Love", "Alicia Keys - Fallin'", "Usher - Yeah!",
       "Chris Brown - Forever", "John Legend - Ordinary People", "Beyoncé - Halo", "Alicia Keys - If I Ain't Got You"
     ]
@@ -205,7 +205,7 @@ function generateSmartPlaylists(likedSongs: string[]) {
         
         if (category === 'Workout' && availableGenres.includes('hip-hop')) targetGenre = 'hip-hop';
         if (category === 'Focus' && availableGenres.includes('classical')) targetGenre = 'classical';
-        if (category === 'Emotional' && availableGenres.includes('r&b')) targetGenre = 'r&b';
+        if (category === 'Emotional' && availableGenres.includes('rnb')) targetGenre = 'rnb';
         
         const genreSongs = songDatabase[language]?.[targetGenre] || songDatabase[language]?.[availableGenres[0]] || [];
         if (genreSongs.length > 0) {
