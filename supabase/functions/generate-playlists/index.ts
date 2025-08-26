@@ -156,9 +156,13 @@ const songDatabase = {
   }
 };
 
-// Smart playlist generation function
+// Smart playlist generation function with enhanced randomization
 function generateSmartPlaylists(likedSongs: string[]) {
   console.log('Analyzing liked songs:', likedSongs);
+  
+  // Add timestamp for unique generation
+  const generationId = Date.now();
+  console.log('Generation ID:', generationId);
   
   // Analyze user preferences
   const analysis = {
@@ -188,54 +192,104 @@ function generateSmartPlaylists(likedSongs: string[]) {
   
   console.log('Language proportions:', languageProportions);
   
-  // Generate playlists maintaining proportions
+  // Shuffle function for better randomization
+  const shuffleArray = (array: string[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  
+  // Generate playlists maintaining proportions with enhanced randomization
   const categories = ['Mix', 'Focus', 'Motivation', 'Emotional', 'Workout'];
-  const playlists = categories.map(category => {
+  const playlists = categories.map((category, categoryIndex) => {
     const songs: string[] = [];
-    const targetCount = 25;
+    const usedSongs = new Set<string>();
+    const targetCount = 20; // Reduced to avoid repetition
+    
+    // Add category-specific seed for variation
+    const categorySeed = generationId + categoryIndex * 1000;
     
     // Distribute songs by language proportion
     languageProportions.forEach(({ language, proportion }) => {
-      const songsNeeded = Math.round(targetCount * proportion);
+      const songsNeeded = Math.max(1, Math.round(targetCount * proportion));
       const availableGenres = Object.keys(songDatabase[language] || {});
       
       for (let i = 0; i < songsNeeded && songs.length < targetCount; i++) {
-        // Select appropriate genre based on category
-        let targetGenre = availableGenres[0] || 'pop';
+        // Select appropriate genre based on category with variation
+        let possibleGenres = [...availableGenres];
         
-        if (category === 'Workout' && availableGenres.includes('hip-hop')) targetGenre = 'hip-hop';
-        if (category === 'Focus' && availableGenres.includes('classical')) targetGenre = 'classical';
-        if (category === 'Emotional' && availableGenres.includes('rnb')) targetGenre = 'rnb';
+        if (category === 'Workout' && availableGenres.includes('hip-hop')) {
+          possibleGenres = ['hip-hop', ...availableGenres.filter(g => g !== 'hip-hop')];
+        }
+        if (category === 'Focus' && availableGenres.includes('classical')) {
+          possibleGenres = ['classical', ...availableGenres.filter(g => g !== 'classical')];
+        }
+        if (category === 'Emotional' && availableGenres.includes('rnb')) {
+          possibleGenres = ['rnb', ...availableGenres.filter(g => g !== 'rnb')];
+        }
+        if (category === 'Motivation' && availableGenres.includes('rock')) {
+          possibleGenres = ['rock', ...availableGenres.filter(g => g !== 'rock')];
+        }
         
-        const genreSongs = songDatabase[language]?.[targetGenre] || songDatabase[language]?.[availableGenres[0]] || [];
-        if (genreSongs.length > 0) {
-          const randomSong = genreSongs[Math.floor(Math.random() * genreSongs.length)];
-          if (!songs.includes(randomSong)) {
-            songs.push(randomSong);
+        // Try multiple genres for variety
+        for (const targetGenre of possibleGenres) {
+          const genreSongs = songDatabase[language]?.[targetGenre] || [];
+          if (genreSongs.length > 0) {
+            const shuffledSongs = shuffleArray(genreSongs);
+            
+            // Try to find unused songs
+            for (const song of shuffledSongs) {
+              if (!usedSongs.has(song) && songs.length < targetCount) {
+                songs.push(song);
+                usedSongs.add(song);
+                break;
+              }
+            }
+            
+            if (songs.length >= targetCount) break;
           }
         }
       }
     });
     
-    // Fill remaining slots with popular songs from detected genres
-    while (songs.length < targetCount) {
-      const popularLanguages = ['english', 'hindi'];
-      const randomLang = popularLanguages[Math.floor(Math.random() * popularLanguages.length)];
+    // Fill remaining slots with variety from all available languages
+    const allLanguages = Object.keys(songDatabase);
+    let attempts = 0;
+    const maxAttempts = 100;
+    
+    while (songs.length < targetCount && attempts < maxAttempts) {
+      const randomLang = allLanguages[Math.floor(Math.random() * allLanguages.length)];
       const availableGenres = Object.keys(songDatabase[randomLang] || {});
-      const randomGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)] || 'pop';
-      const genreSongs = songDatabase[randomLang]?.[randomGenre] || [];
       
-      if (genreSongs.length > 0) {
-        const randomSong = genreSongs[Math.floor(Math.random() * genreSongs.length)];
-        if (!songs.includes(randomSong)) {
-          songs.push(randomSong);
+      if (availableGenres.length > 0) {
+        const randomGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)];
+        const genreSongs = songDatabase[randomLang]?.[randomGenre] || [];
+        
+        if (genreSongs.length > 0) {
+          const shuffledSongs = shuffleArray(genreSongs);
+          
+          for (const song of shuffledSongs) {
+            if (!usedSongs.has(song) && songs.length < targetCount) {
+              songs.push(song);
+              usedSongs.add(song);
+              break;
+            }
+          }
         }
-      } else {
-        break; // Prevent infinite loop
       }
+      attempts++;
     }
     
-    return { category, songs: songs.slice(0, 25) };
+    console.log(`Generated ${category} playlist with ${songs.length} songs`);
+    return { 
+      category, 
+      songs: shuffleArray(songs.slice(0, targetCount)),
+      generatedAt: new Date().toISOString(),
+      id: `${category.toLowerCase()}-${generationId}-${categoryIndex}`
+    };
   });
   
   return playlists;
