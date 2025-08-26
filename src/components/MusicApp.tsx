@@ -138,8 +138,8 @@ export const MusicApp = () => {
   };
 
   const handleTakeTest = () => {
-    if (!user && !cookiesAccepted) {
-      setShowCookieConsent(true);
+    if (!user) {
+      navigate('/auth');
     } else {
       setShowTest(true);
     }

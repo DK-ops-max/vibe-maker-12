@@ -184,40 +184,25 @@
   }
 
   .sound-waves {
-    background: linear-gradient(
-      45deg,
-      transparent 0%,
-      hsl(280 100% 65% / 0.05) 10%,
-      transparent 20%,
-      hsl(315 100% 70% / 0.05) 30%,
-      transparent 40%,
-      hsl(280 100% 65% / 0.05) 50%,
-      transparent 60%,
-      hsl(315 100% 70% / 0.05) 70%,
-      transparent 80%,
-      hsl(280 100% 65% / 0.05) 90%,
-      transparent 100%
-    );
-    background-size: 200% 200%;
-    animation: waveFlow 10s ease-in-out infinite;
+    background: url("data:image/svg+xml,%3csvg width='200' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='wave' x='0' y='0' width='200' height='60' patternUnits='userSpaceOnUse'%3e%3cpath d='M0,30 Q25,10 50,30 T100,30 T150,30 T200,30' stroke='%23ffffff15' stroke-width='2' fill='none'/%3e%3cpath d='M0,35 Q30,15 60,35 T120,35 T180,35' stroke='%23ffffff10' stroke-width='1.5' fill='none'/%3e%3cpath d='M0,25 Q35,5 70,25 T140,25 T210,25' stroke='%23ffffff08' stroke-width='1' fill='none'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23wave)'/%3e%3c/svg%3e") repeat;
+    animation: waveMove 4s ease-in-out infinite;
   }
 
-  @keyframes waveFlow {
-    0%, 100% {
-      background-position: 0% 0%;
-      transform: translateX(-20px);
-    }
-    25% {
-      background-position: 50% 25%;
-      transform: translateX(0px);
-    }
-    50% {
-      background-position: 100% 50%;
-      transform: translateX(20px);
-    }
-    75% {
-      background-position: 50% 75%;
-      transform: translateX(0px);
-    }
+  .sound-waves::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3csvg width='150' height='40' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='wave2' x='0' y='0' width='150' height='40' patternUnits='userSpaceOnUse'%3e%3cpath d='M0,20 Q20,5 40,20 T80,20 T120,20 T160,20' stroke='%23ffffff12' stroke-width='1.5' fill='none'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23wave2)'/%3e%3c/svg%3e") repeat;
+    animation: waveMove 6s ease-in-out infinite reverse;
+  }
+
+  @keyframes waveMove {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    25% { transform: translateX(-30px) translateY(5px); }
+    50% { transform: translateX(-60px) translateY(0); }
+    75% { transform: translateX(-30px) translateY(-5px); }
   }
 }
