@@ -15,8 +15,19 @@ export interface SearchResponse {
 }
 
 export interface GeneratedPlaylist {
+  id?: string;
   category: 'Mix' | 'Focus' | 'Motivation' | 'Emotional' | 'Workout';
   songs: string[];
+  generatedAt?: string;
+}
+
+export interface SavedPlaylist {
+  id: string;
+  user_id: string;
+  category: string;
+  songs: string[];
+  generated_at: string;
+  created_at: string;
 }
 
 export interface SpotifyTrack {

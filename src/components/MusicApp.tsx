@@ -5,11 +5,12 @@ import { SongCard } from "./SongCard";
 import { PlaylistPanel } from "./PlaylistPanel";
 import { CookieConsent } from "./CookieConsent";
 import { LogoPlaceholder } from "./LogoPlaceholder";
-import { Song, SearchResponse } from "@/types/music";
+import { SavedPlaylists } from "./SavedPlaylists";
+import { Song, SearchResponse, SavedPlaylist } from "@/types/music";
 import { useToast } from "@/hooks/use-toast";
 import { generatePlaylistsAPI } from "@/api/generate-playlists";
 import { Button } from "./ui/button";
-import { Music, Play, Sparkles, Headphones, User } from "lucide-react";
+import { Music, Play, Sparkles, Headphones, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
@@ -23,6 +24,8 @@ export const MusicApp = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
   const [cookiesAccepted, setCookiesAccepted] = useState(false);
+  const [showSavedPlaylists, setShowSavedPlaylists] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<SavedPlaylist | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -204,7 +207,7 @@ export const MusicApp = () => {
       
       toast({
         title: "Playlists generated!",
-        description: "Your AI-powered playlists are ready",
+        description: "Your AI-powered playlists are ready and saved",
       });
     } catch (error) {
       console.error("Error generating playlists:", error);
@@ -215,6 +218,18 @@ export const MusicApp = () => {
       });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handlePlaylistSelect = (playlist: SavedPlaylist) => {
+    setSelectedPlaylist(playlist);
+  };
+
+  const handleViewSavedPlaylists = () => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      setShowSavedPlaylists(true);
     }
   };
 
@@ -279,52 +294,128 @@ export const MusicApp = () => {
             <Button 
               onClick={handleTakeTest}
               size="lg"
-              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-glow transition-all duration-300 hover:scale-105 mb-4"
+              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-glow transition-all duration-300 hover:scale-105 mb-4 mr-4"
             >
               <Play className="w-5 h-5 mr-2" />
               Take the Music Taste Test
             </Button>
+            
+            {user && (
+              <Button 
+                onClick={handleViewSavedPlaylists}
+                variant="outline"
+                size="lg"
+                className="px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 hover:scale-105 mb-4"
+              >
+                <Music className="w-5 h-5 mr-2" />
+                View Saved Playlists
+              </Button>
+            )}
             
             <p className="text-sm text-muted-foreground">
               ✨ Free • No signup required • 2 minutes
             </p>
           </div>
 
-          {/* How It Works Section */}
-          <div className="max-w-6xl mx-auto px-6 pb-20">
-            <h2 className="text-3xl font-bold text-center text-foreground mb-16">How It Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Music className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4">1. Choose Your Favorites</h3>
-                <p className="text-muted-foreground">
-                  Search and select songs you love. We analyze the musical DNA of your choices to understand your taste.
-                </p>
+          {/* Saved Playlists Section */}
+          {showSavedPlaylists && user && !selectedPlaylist && (
+            <div className="max-w-6xl mx-auto px-6 pb-20">
+              <div className="mb-6 flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowSavedPlaylists(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
               </div>
+              <SavedPlaylists onPlaylistSelect={handlePlaylistSelect} />
+            </div>
+          )}
 
-              <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-accent" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4">2. AI Analysis</h3>
-                <p className="text-muted-foreground">
-                  Our AI examines genres, tempo, mood, and energy to create your unique musical fingerprint.
-                </p>
+          {/* Selected Playlist View */}
+          {selectedPlaylist && (
+            <div className="max-w-6xl mx-auto px-6 pb-20">
+              <div className="mb-6 flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedPlaylist(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Playlists
+                </Button>
               </div>
-
-              <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Headphones className="w-8 h-8 text-primary" />
+              
+              <div className="bg-gradient-secondary border border-border/50 shadow-card rounded-2xl p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-gradient-primary rounded-xl shadow-glow">
+                    <Music className="w-8 h-8 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-foreground">{selectedPlaylist.category} Playlist</h2>
+                    <p className="text-muted-foreground">
+                      {selectedPlaylist.songs.length} songs • Generated on {new Date(selectedPlaylist.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4">3. Personalized Playlists</h3>
-                <p className="text-muted-foreground">
-                  Get 5 curated playlists: All-time Mix, Focus Mode, Motivational, Emotional, and Workout Energy.
-                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {selectedPlaylist.songs.map((song, index) => (
+                    <div key={index} className="p-4 bg-card/30 rounded-lg hover:bg-card/50 transition-smooth">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-primary">{index + 1}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-foreground truncate">{song}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* How It Works Section */}
+          {!showSavedPlaylists && !selectedPlaylist && (
+            <div className="max-w-6xl mx-auto px-6 pb-20">
+              <h2 className="text-3xl font-bold text-center text-foreground mb-16">How It Works</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Music className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">1. Choose Your Favorites</h3>
+                  <p className="text-muted-foreground">
+                    Search and select songs you love. We analyze the musical DNA of your choices to understand your taste.
+                  </p>
+                </div>
+
+                <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/20 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">2. AI Analysis</h3>
+                  <p className="text-muted-foreground">
+                    Our AI examines genres, tempo, mood, and energy to create your unique musical fingerprint.
+                  </p>
+                </div>
+
+                <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Headphones className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">3. Personalized Playlists</h3>
+                  <p className="text-muted-foreground">
+                    Get 5 curated playlists: All-time Mix, Focus Mode, Motivational, Emotional, and Workout Energy.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
