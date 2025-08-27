@@ -6,71 +6,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Language detection function
+// Improved language detection function
 function detectLanguage(songName: string, artistName: string): string {
-  const text = `${songName} ${artistName}`.toLowerCase();
+  const artist = artistName.toLowerCase();
+  const song = songName.toLowerCase();
   
-  // Hindi indicators
-  const hindiIndicators = [
-    'tum', 'hai', 'dil', 'aaj', 'kya', 'tere', 'tera', 'mera', 'hum', 'main', 'yeh', 'woh',
-    'sapna', 'pyaar', 'mohabbat', 'ishq', 'zindagi', 'khushi', 'gham', 'raat', 'din',
-    'chand', 'sitara', 'aansu', 'hasna', 'rona', 'saath', 'judaai', 'milan', 'safar'
-  ];
+  // Known artists by language (more reliable than keyword matching)
+  const artistLanguages = {
+    'hindi': ['arijit singh', 'shreya ghoshal', 'sonu nigam', 'atif aslam', 'rahat fateh ali khan', 'armaan malik', 'sunidhi chauhan', 'alka yagnik', 'udit narayan', 'kumar sanu', 'kishore kumar', 'lata mangeshkar', 'mohammed rafi', 'asha bhosle', 'diljit dosanjh', 'badshah', 'guru randhawa', 'honey singh', 'neha kakkar', 'tulsi kumar', 'asees kaur'],
+    'spanish': ['bad bunny', 'rosalía', 'j balvin', 'maluma', 'ozuna', 'karol g', 'sebastian yatra', 'daddy yankee', 'luis fonsi', 'anuel aa', 'shakira', 'manu chao', 'jesse & joy', 'mana', 'pablo alboran'],
+    'korean': ['bts', 'blackpink', 'twice', 'stray kids', 'itzy', 'aespa', 'newjeans', 'ive', 'red velvet', 'girls generation', 'snsd', 'bigbang', 'exo', 'seventeen', 'nct', 'lisa', 'jennie', 'jisoo', 'rose'],
+    'japanese': ['kenshi yonezu', 'official hige dandism', 'aimyon', 'yoasobi', 'king gnu', 'lisa', 'fujii kaze', 'eve', 'radwimps', 'one ok rock', 'x japan', 'babymetal'],
+    'french': ['stromae', 'christine and the queens', 'angèle', 'indila', 'tal', 'zaz', 'louane', 'dadju', 'soprano', 'bigflo & oli']
+  };
   
-  // Spanish indicators  
-  const spanishIndicators = [
-    'mi', 'tu', 'el', 'la', 'en', 'de', 'que', 'yo', 'te', 'me', 'se', 'con', 'para',
-    'amor', 'vida', 'corazón', 'noche', 'día', 'tiempo', 'siempre', 'nunca', 'todo'
-  ];
+  // Check artist match first (most reliable)
+  for (const [language, artists] of Object.entries(artistLanguages)) {
+    if (artists.some(knownArtist => artist.includes(knownArtist))) {
+      return language;
+    }
+  }
   
-  // French indicators
-  const frenchIndicators = [
-    'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'le', 'la', 'les', 'de', 'du',
-    'amour', 'vie', 'coeur', 'nuit', 'jour', 'temps', 'toujours', 'jamais', 'tout'
-  ];
-
-  // Korean indicators (romanized)
-  const koreanIndicators = [
-    'sarang', 'neo', 'na', 'uri', 'babo', 'hajima', 'oneul', 'nae', 'geudae', 'kkum',
-    'maeum', 'nunmul', 'haengbok', 'apeum', 'gieok', 'jeongmal', 'mianhae', 'gomawo'
-  ];
-
-  // Japanese indicators (romanized)
-  const japaneseIndicators = [
-    'watashi', 'anata', 'kimi', 'boku', 'ore', 'kokoro', 'ai', 'yume', 'koi', 'namida',
-    'shiawase', 'kanashii', 'ureshii', 'sayonara', 'arigatou', 'suki', 'daisuki'
-  ];
-
+  // Only check keywords if no artist match and song contains clear non-English indicators
+  const text = `${song} ${artist}`;
+  
+  // Strong Hindi indicators (only very specific words)
+  const hindiIndicators = ['bollywood', 'dil', 'pyaar', 'ishq', 'zindagi', 'sapna', 'mohabbat'];
   const hindiCount = hindiIndicators.filter(word => text.includes(word)).length;
-  const spanishCount = spanishIndicators.filter(word => text.includes(word)).length;
-  const frenchCount = frenchIndicators.filter(word => text.includes(word)).length;
-  const koreanCount = koreanIndicators.filter(word => text.includes(word)).length;
-  const japaneseCount = japaneseIndicators.filter(word => text.includes(word)).length;
-
-  if (hindiCount > 0) return 'hindi';
-  if (spanishCount > 0) return 'spanish';
-  if (frenchCount > 0) return 'french';
-  if (koreanCount > 0) return 'korean';
-  if (japaneseCount > 0) return 'japanese';
   
+  // Strong Spanish indicators
+  const spanishIndicators = ['reggaeton', 'corazón', 'amor', 'vida', 'noche', 'tiempo'];
+  const spanishCount = spanishIndicators.filter(word => text.includes(word)).length;
+  
+  if (hindiCount > 1) return 'hindi';
+  if (spanishCount > 1) return 'spanish';
+  
+  // Default to English for better accuracy
   return 'english';
 }
 
-// Genre detection function
+// Enhanced genre detection function
 function detectGenre(songName: string, artistName: string): string {
   const text = `${songName} ${artistName}`.toLowerCase();
   
   const genreKeywords = {
-    'bollywood': ['bollywood', 'hindi', 'arijit', 'shreya', 'sonu', 'alka', 'udit', 'kumar sanu', 'rahman'],
-    'pop': ['pop', 'taylor', 'ariana', 'billie', 'dua', 'olivia', 'weeknd', 'bruno', 'ed sheeran'],
-    'rock': ['rock', 'metal', 'guitar', 'band', 'linkin', 'coldplay', 'imagine dragons', 'maroon'],
-    'hip-hop': ['hip hop', 'rap', 'drake', 'kendrick', 'eminem', 'kanye', 'travis', 'post malone'],
-    'electronic': ['electronic', 'edm', 'dance', 'techno', 'house', 'calvin harris', 'david guetta'],
-    'rnb': ['r&b', 'soul', 'beyonce', 'john legend', 'alicia keys', 'usher', 'chris brown'],
-    'indie': ['indie', 'alternative', 'arctic monkeys', 'vampire weekend', 'tame impala'],
-    'classical': ['classical', 'orchestra', 'symphony', 'piano', 'violin', 'bach', 'mozart'],
-    'jazz': ['jazz', 'blues', 'swing', 'saxophone', 'trumpet', 'ella fitzgerald', 'louis armstrong'],
-    'kpop': ['bts', 'blackpink', 'twice', 'stray kids', 'itzy', 'aespa', 'newjeans', 'ive']
+    'bollywood': ['arijit singh', 'shreya ghoshal', 'sonu nigam', 'atif aslam', 'rahat fateh ali khan', 'armaan malik', 'sunidhi chauhan', 'bollywood'],
+    'pop': ['taylor swift', 'ariana grande', 'billie eilish', 'dua lipa', 'olivia rodrigo', 'the weeknd', 'bruno mars', 'ed sheeran', 'harry styles', 'benson boone', 'miley cyrus', 'selena gomez', 'justin bieber'],
+    'rock': ['coldplay', 'imagine dragons', 'onerepublic', 'maroon 5', 'linkin park', 'foo fighters', 'red hot chili peppers', 'arctic monkeys', 'the killers', 'muse'],
+    'hip-hop': ['drake', 'kendrick lamar', 'eminem', 'kanye west', 'travis scott', 'post malone', 'j. cole', 'future', 'lil wayne', 'jay-z', 'nas'],
+    'electronic': ['calvin harris', 'david guetta', 'skrillex', 'deadmau5', 'tiesto', 'martin garrix', 'avicii', 'diplo', 'flume'],
+    'rnb': ['beyoncé', 'john legend', 'alicia keys', 'usher', 'chris brown', 'the weeknd', 'frank ocean', 'sza', 'daniel caesar'],
+    'indie': ['arctic monkeys', 'vampire weekend', 'tame impala', 'the strokes', 'foster the people', 'mgmt', 'alt-j', 'glass animals'],
+    'reggaeton': ['bad bunny', 'j balvin', 'maluma', 'ozuna', 'daddy yankee', 'luis fonsi', 'karol g', 'anuel aa'],
+    'kpop': ['bts', 'blackpink', 'twice', 'stray kids', 'itzy', 'aespa', 'newjeans', 'ive', 'red velvet', 'seventeen']
   };
   
   for (const [genre, keywords] of Object.entries(genreKeywords)) {
@@ -82,7 +70,7 @@ function detectGenre(songName: string, artistName: string): string {
   return 'pop';
 }
 
-// Comprehensive song database by language and genre
+// Expanded song database with more variety and better songs
 const songDatabase = {
   hindi: {
     bollywood: [
@@ -91,14 +79,11 @@ const songDatabase = {
       "Shreya Ghoshal - Deewani Mastani", "Rahat Fateh Ali Khan - Jag Ghoomeya", "Armaan Malik - Bol Do Na Zara",
       "Atif Aslam - Jeene Laga Hoon", "Arijit Singh - Channa Mereya", "Shreya Ghoshal - Ghoomar",
       "Sonu Nigam - Abhi Mujh Mein Kahin", "Arijit Singh - Hawayein", "Sunidhi Chauhan - Kamli",
-      "Arijit Singh - Phir Bhi Tumko Chaahunga", "Shreya Ghoshal - Manwa Laage", "Rahat Fateh Ali Khan - Zaroori Tha",
-      "Arijit Singh - Gerua", "Armaan Malik - Main Rahoon Ya Na Rahoon", "Atif Aslam - Pehli Nazar Mein",
-      "Arijit Singh - Bolna", "Shreya Ghoshal - Samjhawan", "Sonu Nigam - Suraj Hua Maddham"
+      "Arijit Singh - Phir Bhi Tumko Chaahunga", "Shreya Ghoshal - Manwa Laage", "Rahat Fateh Ali Khan - Zaroori Tha"
     ],
     pop: [
       "Diljit Dosanjh - G.O.A.T", "Badshah - Genda Phool", "Guru Randhawa - Lahore", "Honey Singh - Blue Eyes",
-      "Diljit Dosanjh - Do You Know", "Badshah - DJ Waley Babu", "Guru Randhawa - High Rated Gabru",
-      "Neha Kakkar - Oh Humsafar", "Tulsi Kumar - Tere Naal", "Asees Kaur - Bolna Halke Halke"
+      "Diljit Dosanjh - Do You Know", "Badshah - DJ Waley Babu", "Guru Randhawa - High Rated Gabru"
     ]
   },
   english: {
@@ -109,54 +94,84 @@ const songDatabase = {
       "Taylor Swift - Shake It Off", "Ed Sheeran - Shape of You", "Billie Eilish - Happier Than Ever",
       "Harry Styles - Watermelon Sugar", "Ariana Grande - Thank U, Next", "Bruno Mars - Uptown Funk",
       "Olivia Rodrigo - Drivers License", "Post Malone - Sunflower", "Dua Lipa - Physical", "The Weeknd - Save Your Tears",
-      "Taylor Swift - Lover", "Ed Sheeran - Thinking Out Loud", "Billie Eilish - Ocean Eyes"
+      "Taylor Swift - Lover", "Ed Sheeran - Thinking Out Loud", "Billie Eilish - Ocean Eyes", "Benson Boone - Beautiful Things",
+      "Benson Boone - In The Stars", "Benson Boone - GHOST TOWN", "Miley Cyrus - Flowers", "SZA - Good Days",
+      "Lizzo - About Damn Time", "Glass Animals - Heat Waves", "Tate McRae - Greedy", "Sabrina Carpenter - Espresso",
+      "Chappell Roan - Good Luck, Babe!", "Gracie Abrams - That's So True", "Teddy Swims - Lose Control",
+      "Noah Kahan - Stick Season", "Joji - Glimpse of Us", "Steve Lacy - Bad Habit", "Charlie Puth - Left and Right",
+      "Lana Del Rey - Summertime Sadness", "Adele - Easy On Me", "Sam Smith - Unholy", "Lewis Capaldi - Someone You Loved"
     ],
     rock: [
       "Imagine Dragons - Believer", "Coldplay - Viva La Vida", "OneRepublic - Counting Stars", "Maroon 5 - Sugar",
       "Linkin Park - In the End", "Coldplay - Fix You", "Imagine Dragons - Radioactive", "OneRepublic - Apologize",
-      "Maroon 5 - Payphone", "Linkin Park - Numb", "Coldplay - The Scientist", "Imagine Dragons - Thunder"
+      "Maroon 5 - Payphone", "Linkin Park - Numb", "Coldplay - The Scientist", "Imagine Dragons - Thunder",
+      "Foo Fighters - Everlong", "Red Hot Chili Peppers - Under The Bridge", "The Killers - Mr. Brightside",
+      "Arctic Monkeys - Do I Wanna Know?", "Muse - Uprising", "Green Day - Boulevard of Broken Dreams",
+      "Paramore - Still Into You", "Fall Out Boy - Sugar, We're Goin Down", "My Chemical Romance - Welcome to the Black Parade"
     ],
     'hip-hop': [
       "Drake - God's Plan", "Kendrick Lamar - HUMBLE.", "Eminem - Lose Yourself", "Post Malone - White Iverson",
-      "Travis Scott - SICKO MODE", "Drake - In My Feelings", "Kendrick Lamar - DNA.", "Eminem - Without Me"
+      "Travis Scott - SICKO MODE", "Drake - In My Feelings", "Kendrick Lamar - DNA.", "Eminem - Without Me",
+      "J. Cole - No Role Modelz", "Future - Mask Off", "Lil Wayne - A Milli", "Jay-Z - 99 Problems",
+      "Nas - N.Y. State of Mind", "Childish Gambino - This Is America", "Tyler, The Creator - EARFQUAKE",
+      "Mac Miller - Good News", "XXXTentacion - SAD!", "Juice WRLD - Lucid Dreams"
     ],
     'rnb': [
       "John Legend - All of Me", "Beyoncé - Crazy in Love", "Alicia Keys - Fallin'", "Usher - Yeah!",
-      "Chris Brown - Forever", "John Legend - Ordinary People", "Beyoncé - Halo", "Alicia Keys - If I Ain't Got You"
+      "Chris Brown - Forever", "John Legend - Ordinary People", "Beyoncé - Halo", "Alicia Keys - If I Ain't Got You",
+      "Frank Ocean - Thinking Bout You", "SZA - Kill Bill", "Daniel Caesar - Best Part", "H.E.R. - Focus",
+      "The Weeknd - Earned It", "Khalid - Location", "Summer Walker - Girls Need Love", "Giveon - Heartbreak Anniversary"
+    ],
+    indie: [
+      "Arctic Monkeys - 505", "Tame Impala - The Less I Know The Better", "Foster the People - Pumped Up Kicks",
+      "MGMT - Electric Feel", "Alt-J - Left Hand Free", "Glass Animals - Gooey", "The Strokes - Last Nite",
+      "Vampire Weekend - A-Punk", "Phoenix - 1901", "Two Door Cinema Club - What You Know",
+      "Cage the Elephant - Come a Little Closer", "Portugal. The Man - Feel It Still"
+    ],
+    electronic: [
+      "Calvin Harris - Feel So Close", "David Guetta - Titanium", "Avicii - Wake Me Up", "Skrillex - Bangarang",
+      "Deadmau5 - Ghosts 'n' Stuff", "Tiësto - Adagio for Strings", "Martin Garrix - Animals", "Diplo - Revolution",
+      "Flume - Never Be Like You", "ODESZA - Say My Name", "Disclosure - Latch", "Justice - D.A.N.C.E."
     ]
   },
   spanish: {
     pop: [
       "Bad Bunny - Tití Me Preguntó", "Rosalía - Con Altura", "J Balvin - Mi Gente", "Maluma - Felices los 4",
-      "Ozuna - Baila Baila Baila", "Karol G - Tusa", "Sebastian Yatra - Traicionera", "Camila Cabello - Havana"
+      "Ozuna - Baila Baila Baila", "Karol G - Tusa", "Sebastian Yatra - Traicionera", "Camila Cabello - Havana",
+      "Shakira - Hips Don't Lie", "Jesse & Joy - Corre!", "Pablo Alborán - Solamente Tú", "Manu Chao - Me Gustas Tú"
     ],
     reggaeton: [
       "Daddy Yankee - Gasolina", "Luis Fonsi - Despacito", "Bad Bunny - Yo Perreo Sola", "J Balvin - Ginza",
-      "Maluma - Corazón", "Ozuna - Te Boté", "Karol G - Bichota", "Anuel AA - Ella Quiere Beber"
+      "Maluma - Corazón", "Ozuna - Te Boté", "Karol G - Bichota", "Anuel AA - Ella Quiere Beber",
+      "Nicky Jam - El Perdón", "Wisin & Yandel - Rakata", "Don Omar - Danza Kuduro", "Farruko - Pepas"
     ]
   },
   korean: {
     kpop: [
       "BTS - Dynamite", "BLACKPINK - DDU-DU DDU-DU", "NewJeans - Super Shy", "IVE - LOVE DIVE",
       "TWICE - The Feels", "Stray Kids - God's Menu", "ITZY - WANNABE", "aespa - Next Level",
-      "BTS - Butter", "BLACKPINK - Kill This Love", "NewJeans - Attention", "IVE - Eleven"
+      "BTS - Butter", "BLACKPINK - Kill This Love", "NewJeans - Attention", "IVE - Eleven",
+      "Red Velvet - Psycho", "SEVENTEEN - God of Music", "NCT Dream - Hot Sauce", "(G)I-DLE - Tomboy",
+      "LE SSERAFIM - ANTIFRAGILE", "Girls' Generation - Gee", "Big Bang - Fantastic Baby", "EXO - Love Shot"
     ]
   },
   japanese: {
     jpop: [
-      "Kenshi Yonezu - Lemon", "Official HIGE DANdism - Pretender", "Aimyon - Marigold", "Yoasobi - Yoru ni Kakeru",
-      "King Gnu - Hakujitsu", "LiSA - Gurenge", "Fujii Kaze - Shinunoga E-Wa", "Eve - Kaikai Kitan"
+      "Kenshi Yonezu - Lemon", "Official HIGE DANdism - Pretender", "Aimyon - Marigold", "YOASOBI - Yoru ni Kakeru",
+      "King Gnu - Hakujitsu", "LiSA - Gurenge", "Fujii Kaze - Shinunoga E-Wa", "Eve - Kaikai Kitan",
+      "RADWIMPS - Zen Zen Zense", "ONE OK ROCK - The Beginning", "Hikaru Utada - First Love", "Ayumi Hamasaki - M"
     ]
   },
   french: {
     pop: [
       "Stromae - Alors on Danse", "Christine and the Queens - Tilted", "Angèle - Balance ton quoi",
-      "Indila - Dernière Danse", "Tal - Le Sens de la Vie", "Zaz - Je veux", "Louane - Avenir"
+      "Indila - Dernière Danse", "Tal - Le Sens de la Vie", "Zaz - Je veux", "Louane - Avenir",
+      "Dadju - Reine", "Soprano - Cosmo", "Bigflo & Oli - Dommage"
     ]
   }
 };
 
-// Smart playlist generation function with enhanced randomization
+// Smart playlist generation function with intelligent language handling
 function generateSmartPlaylists(likedSongs: string[]) {
   console.log('Analyzing liked songs:', likedSongs);
   
@@ -183,15 +198,6 @@ function generateSmartPlaylists(likedSongs: string[]) {
   
   console.log('Analysis result:', analysis);
   
-  // Calculate proportions
-  const totalSongs = likedSongs.length;
-  const languageProportions = Object.entries(analysis.languages).map(([lang, count]) => ({
-    language: lang,
-    proportion: count / totalSongs
-  }));
-  
-  console.log('Language proportions:', languageProportions);
-  
   // Shuffle function for better randomization
   const shuffleArray = (array: string[]) => {
     const shuffled = [...array];
@@ -201,86 +207,105 @@ function generateSmartPlaylists(likedSongs: string[]) {
     }
     return shuffled;
   };
+
+  // Smart language selection - don't force languages that don't match user preference
+  const primaryLanguage = Object.keys(analysis.languages).reduce((a, b) => 
+    analysis.languages[a] > analysis.languages[b] ? a : b, 'english'
+  );
   
-  // Generate playlists maintaining proportions with enhanced randomization
+  const shouldIncludeOtherLanguages = Object.keys(analysis.languages).length > 1;
+  
+  console.log(`Primary language: ${primaryLanguage}, Include others: ${shouldIncludeOtherLanguages}`);
+  
+  // Generate playlists with category-specific logic
   const categories = ['Mix', 'Focus', 'Motivation', 'Emotional', 'Workout'];
   const playlists = categories.map((category, categoryIndex) => {
     const songs: string[] = [];
     const usedSongs = new Set<string>();
-    const targetCount = 20; // Reduced to avoid repetition
+    const targetCount = 25;
     
-    // Add category-specific seed for variation
-    const categorySeed = generationId + categoryIndex * 1000;
+    // Category-specific genre preferences
+    const categoryGenrePrefs = {
+      'Mix': ['pop', 'rock', 'rnb', 'indie'],
+      'Focus': ['indie', 'electronic', 'pop', 'rnb'], 
+      'Motivation': ['rock', 'hip-hop', 'pop', 'electronic'],
+      'Emotional': ['rnb', 'pop', 'indie', 'rock'],
+      'Workout': ['hip-hop', 'electronic', 'rock', 'pop']
+    };
     
-    // Distribute songs by language proportion
-    languageProportions.forEach(({ language, proportion }) => {
-      const songsNeeded = Math.max(1, Math.round(targetCount * proportion));
-      const availableGenres = Object.keys(songDatabase[language] || {});
+    const preferredGenres = categoryGenrePrefs[category] || ['pop', 'rock'];
+    
+    // Start with primary language (70-80% of songs)
+    const primarySongCount = Math.floor(targetCount * 0.75);
+    let addedFromPrimary = 0;
+    
+    for (const genre of preferredGenres) {
+      if (addedFromPrimary >= primarySongCount) break;
       
-      for (let i = 0; i < songsNeeded && songs.length < targetCount; i++) {
-        // Select appropriate genre based on category with variation
-        let possibleGenres = [...availableGenres];
+      const genreSongs = songDatabase[primaryLanguage]?.[genre] || [];
+      if (genreSongs.length > 0) {
+        const shuffledSongs = shuffleArray(genreSongs);
+        const songsToAdd = Math.min(8, Math.floor(primarySongCount / preferredGenres.length));
         
-        if (category === 'Workout' && availableGenres.includes('hip-hop')) {
-          possibleGenres = ['hip-hop', ...availableGenres.filter(g => g !== 'hip-hop')];
+        for (let i = 0; i < songsToAdd && addedFromPrimary < primarySongCount; i++) {
+          const song = shuffledSongs[i];
+          if (song && !usedSongs.has(song)) {
+            songs.push(song);
+            usedSongs.add(song);
+            addedFromPrimary++;
+          }
         }
-        if (category === 'Focus' && availableGenres.includes('classical')) {
-          possibleGenres = ['classical', ...availableGenres.filter(g => g !== 'classical')];
-        }
-        if (category === 'Emotional' && availableGenres.includes('rnb')) {
-          possibleGenres = ['rnb', ...availableGenres.filter(g => g !== 'rnb')];
-        }
-        if (category === 'Motivation' && availableGenres.includes('rock')) {
-          possibleGenres = ['rock', ...availableGenres.filter(g => g !== 'rock')];
-        }
+      }
+    }
+    
+    // Add some variety from other languages only if user showed interest
+    if (shouldIncludeOtherLanguages && songs.length < targetCount) {
+      const otherLanguages = Object.keys(songDatabase).filter(lang => lang !== primaryLanguage);
+      const remainingSlots = targetCount - songs.length;
+      let addedFromOthers = 0;
+      
+      for (const lang of shuffleArray(otherLanguages)) {
+        if (addedFromOthers >= remainingSlots) break;
         
-        // Try multiple genres for variety
-        for (const targetGenre of possibleGenres) {
-          const genreSongs = songDatabase[language]?.[targetGenre] || [];
+        const availableGenres = Object.keys(songDatabase[lang] || {});
+        for (const genre of shuffleArray(availableGenres)) {
+          const genreSongs = songDatabase[lang]?.[genre] || [];
           if (genreSongs.length > 0) {
             const shuffledSongs = shuffleArray(genreSongs);
+            const songsToAdd = Math.min(3, remainingSlots - addedFromOthers);
             
-            // Try to find unused songs
-            for (const song of shuffledSongs) {
-              if (!usedSongs.has(song) && songs.length < targetCount) {
+            for (let i = 0; i < songsToAdd && addedFromOthers < remainingSlots; i++) {
+              const song = shuffledSongs[i];
+              if (song && !usedSongs.has(song)) {
                 songs.push(song);
                 usedSongs.add(song);
-                break;
+                addedFromOthers++;
               }
             }
-            
-            if (songs.length >= targetCount) break;
           }
+          if (addedFromOthers >= remainingSlots) break;
         }
       }
-    });
+    }
     
-    // Fill remaining slots with variety from all available languages
-    const allLanguages = Object.keys(songDatabase);
-    let attempts = 0;
-    const maxAttempts = 100;
-    
-    while (songs.length < targetCount && attempts < maxAttempts) {
-      const randomLang = allLanguages[Math.floor(Math.random() * allLanguages.length)];
-      const availableGenres = Object.keys(songDatabase[randomLang] || {});
-      
-      if (availableGenres.length > 0) {
-        const randomGenre = availableGenres[Math.floor(Math.random() * availableGenres.length)];
-        const genreSongs = songDatabase[randomLang]?.[randomGenre] || [];
+    // Fill remaining slots with more primary language songs if needed
+    while (songs.length < targetCount) {
+      let added = false;
+      for (const genre of Object.keys(songDatabase[primaryLanguage] || {})) {
+        const genreSongs = songDatabase[primaryLanguage]?.[genre] || [];
+        const shuffledSongs = shuffleArray(genreSongs);
         
-        if (genreSongs.length > 0) {
-          const shuffledSongs = shuffleArray(genreSongs);
-          
-          for (const song of shuffledSongs) {
-            if (!usedSongs.has(song) && songs.length < targetCount) {
-              songs.push(song);
-              usedSongs.add(song);
-              break;
-            }
+        for (const song of shuffledSongs) {
+          if (!usedSongs.has(song) && songs.length < targetCount) {
+            songs.push(song);
+            usedSongs.add(song);
+            added = true;
+            break;
           }
         }
+        if (added) break;
       }
-      attempts++;
+      if (!added) break; // Prevent infinite loop
     }
     
     console.log(`Generated ${category} playlist with ${songs.length} songs`);
@@ -292,6 +317,7 @@ function generateSmartPlaylists(likedSongs: string[]) {
     };
   });
   
+  console.log('Playlists generated successfully with smart language handling');
   return playlists;
 }
 
