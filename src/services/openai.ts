@@ -71,7 +71,17 @@ export const getSavedPlaylists = async (): Promise<SavedPlaylist[]> => {
       return [];
     }
 
-    return data || [];
+    // Cast the data properly to match SavedPlaylist interface
+    const savedPlaylists: SavedPlaylist[] = (data || []).map(item => ({
+      id: item.id,
+      user_id: item.user_id,
+      category: item.category,
+      songs: Array.isArray(item.songs) ? (item.songs as string[]) : [],
+      generated_at: item.generated_at,
+      created_at: item.created_at
+    }));
+
+    return savedPlaylists;
   } catch (error) {
     console.error('Error fetching saved playlists:', error);
     return [];
