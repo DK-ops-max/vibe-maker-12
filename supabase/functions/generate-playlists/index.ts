@@ -70,68 +70,73 @@ function detectGenre(songName: string, artistName: string): string {
   return 'pop';
 }
 
-// Expanded song database with more variety and better songs
+// Enhanced song database with top-tier recommendations
 const songDatabase = {
   hindi: {
     bollywood: [
       "Arijit Singh - Tum Hi Ho", "Shreya Ghoshal - Nagada Sang Dhol", "Sonu Nigam - Kal Ho Naa Ho",
-      "Arijit Singh - Ae Dil Hai Mushkil", "A.R. Rahman - Enna Sona", "Arijit Singh - Hamari Adhuri Kahani",
+      "Arijit Singh - Kesariya", "A.R. Rahman - Enna Sona", "Arijit Singh - Ve Maahi",
       "Shreya Ghoshal - Deewani Mastani", "Rahat Fateh Ali Khan - Jag Ghoomeya", "Armaan Malik - Bol Do Na Zara",
-      "Atif Aslam - Jeene Laga Hoon", "Arijit Singh - Channa Mereya", "Shreya Ghoshal - Ghoomar",
-      "Sonu Nigam - Abhi Mujh Mein Kahin", "Arijit Singh - Hawayein", "Sunidhi Chauhan - Kamli",
-      "Arijit Singh - Phir Bhi Tumko Chaahunga", "Shreya Ghoshal - Manwa Laage", "Rahat Fateh Ali Khan - Zaroori Tha"
+      "Arijit Singh - Apna Bana Le", "Arijit Singh - Channa Mereya", "Shreya Ghoshal - Ghoomar",
+      "Jubin Nautiyal - Lut Gaye", "Arijit Singh - Hawayein", "Asees Kaur - Ve Maahi",
+      "Arijit Singh - Phir Bhi Tumko Chaahunga", "Shreya Ghoshal - Manwa Laage", "Darshan Raval - Tera Zikr"
     ],
     pop: [
       "Diljit Dosanjh - G.O.A.T", "Badshah - Genda Phool", "Guru Randhawa - Lahore", "Honey Singh - Blue Eyes",
-      "Diljit Dosanjh - Do You Know", "Badshah - DJ Waley Babu", "Guru Randhawa - High Rated Gabru"
+      "Diljit Dosanjh - Born to Shine", "Badshah - Mercy", "Guru Randhawa - Made in India", "AP Dhillon - Brown Munde"
     ]
   },
   english: {
     pop: [
-      "Ed Sheeran - Perfect", "Billie Eilish - Bad Guy", "Dua Lipa - Levitating", "The Weeknd - Blinding Lights",
-      "Taylor Swift - Anti-Hero", "Harry Styles - As It Was", "Olivia Rodrigo - Good 4 U", "Bruno Mars - Just The Way You Are",
-      "Ariana Grande - 7 rings", "Post Malone - Circles", "Dua Lipa - Don't Start Now", "The Weeknd - Can't Feel My Face",
-      "Taylor Swift - Shake It Off", "Ed Sheeran - Shape of You", "Billie Eilish - Happier Than Ever",
-      "Harry Styles - Watermelon Sugar", "Ariana Grande - Thank U, Next", "Bruno Mars - Uptown Funk",
-      "Olivia Rodrigo - Drivers License", "Post Malone - Sunflower", "Dua Lipa - Physical", "The Weeknd - Save Your Tears",
-      "Taylor Swift - Lover", "Ed Sheeran - Thinking Out Loud", "Billie Eilish - Ocean Eyes", "Benson Boone - Beautiful Things",
-      "Benson Boone - In The Stars", "Benson Boone - GHOST TOWN", "Miley Cyrus - Flowers", "SZA - Good Days",
+      "Billie Eilish - What Was I Made For", "Dua Lipa - Houdini", "The Weeknd - Blinding Lights", "Taylor Swift - Anti-Hero",
+      "Harry Styles - As It Was", "Olivia Rodrigo - Vampire", "Miley Cyrus - Flowers", "SZA - Good Days",
       "Lizzo - About Damn Time", "Glass Animals - Heat Waves", "Tate McRae - Greedy", "Sabrina Carpenter - Espresso",
       "Chappell Roan - Good Luck, Babe!", "Gracie Abrams - That's So True", "Teddy Swims - Lose Control",
       "Noah Kahan - Stick Season", "Joji - Glimpse of Us", "Steve Lacy - Bad Habit", "Charlie Puth - Left and Right",
-      "Lana Del Rey - Summertime Sadness", "Adele - Easy On Me", "Sam Smith - Unholy", "Lewis Capaldi - Someone You Loved"
+      "Lana Del Rey - A&W", "Adele - Easy On Me", "Sam Smith - Unholy", "Lewis Capaldi - Forget Me",
+      "Doja Cat - Paint The Town Red", "Ariana Grande - Yes, And?", "Ed Sheeran - Eyes Closed", "Bruno Mars - Die With A Smile",
+      "Post Malone - Chemical", "The Weeknd - Popular", "Billie Eilish - LUNCH", "Taylor Swift - Fortnight",
+      "Sabrina Carpenter - Please Please Please", "Chappell Roan - Pink Pony Club", "Charli XCX - 360",
+      "Benson Boone - Beautiful Things", "Tyla - Water", "Ice Spice - Think U The Shit", "Shaboozey - A Bar Song"
     ],
     rock: [
-      "Imagine Dragons - Believer", "Coldplay - Viva La Vida", "OneRepublic - Counting Stars", "Maroon 5 - Sugar",
-      "Linkin Park - In the End", "Coldplay - Fix You", "Imagine Dragons - Radioactive", "OneRepublic - Apologize",
-      "Maroon 5 - Payphone", "Linkin Park - Numb", "Coldplay - The Scientist", "Imagine Dragons - Thunder",
-      "Foo Fighters - Everlong", "Red Hot Chili Peppers - Under The Bridge", "The Killers - Mr. Brightside",
-      "Arctic Monkeys - Do I Wanna Know?", "Muse - Uprising", "Green Day - Boulevard of Broken Dreams",
-      "Paramore - Still Into You", "Fall Out Boy - Sugar, We're Goin Down", "My Chemical Romance - Welcome to the Black Parade"
+      "Imagine Dragons - Enemy", "OneRepublic - I Ain't Worried", "Coldplay - Viva La Vida", "Maroon 5 - Sugar",
+      "Arctic Monkeys - Do I Wanna Know?", "The Killers - Mr. Brightside", "Linkin Park - In the End", "Foo Fighters - Everlong",
+      "Red Hot Chili Peppers - Under The Bridge", "Muse - Uprising", "Green Day - Boulevard of Broken Dreams",
+      "Paramore - Still Into You", "Fall Out Boy - Sugar, We're Goin Down", "My Chemical Romance - Welcome to the Black Parade",
+      "Imagine Dragons - Believer", "OneRepublic - Counting Stars", "Coldplay - Fix You", "Imagine Dragons - Thunder",
+      "Twenty One Pilots - Heathens", "Panic! At The Disco - High Hopes", "The Neighbourhood - Sweater Weather",
+      "Foster the People - Pumped Up Kicks", "Kings of Leon - Use Somebody", "The Strokes - Last Nite"
     ],
     'hip-hop': [
-      "Drake - God's Plan", "Kendrick Lamar - HUMBLE.", "Eminem - Lose Yourself", "Post Malone - White Iverson",
-      "Travis Scott - SICKO MODE", "Drake - In My Feelings", "Kendrick Lamar - DNA.", "Eminem - Without Me",
-      "J. Cole - No Role Modelz", "Future - Mask Off", "Lil Wayne - A Milli", "Jay-Z - 99 Problems",
-      "Nas - N.Y. State of Mind", "Childish Gambino - This Is America", "Tyler, The Creator - EARFQUAKE",
-      "Mac Miller - Good News", "XXXTentacion - SAD!", "Juice WRLD - Lucid Dreams"
+      "Drake - God's Plan", "Kendrick Lamar - HUMBLE.", "Travis Scott - FE!N", "Post Malone - White Iverson",
+      "Future - Life Is Good", "Drake - Rich Flex", "Kendrick Lamar - Not Like Us", "21 Savage - a lot",
+      "J. Cole - No Role Modelz", "Lil Baby - Drip Too Hard", "Gunna - pushin P", "Tyler, The Creator - EARFQUAKE",
+      "Mac Miller - Good News", "XXXTentacion - SAD!", "Juice WRLD - Lucid Dreams", "Playboi Carti - FE!N",
+      "Travis Scott - SICKO MODE", "Future - Mask Off", "Lil Wayne - A Milli", "Childish Gambino - This Is America",
+      "Drake - First Person Shooter", "Metro Boomin - Superhero", "Central Cee - Doja", "Ice Spice - Munch"
     ],
     'rnb': [
+      "SZA - Kill Bill", "The Weeknd - Die For You", "Summer Walker - Girls Need Love", "Giveon - Heartbreak Anniversary",
+      "Daniel Caesar - Best Part", "H.E.R. - Focus", "Frank Ocean - Thinking Bout You", "Khalid - Location",
       "John Legend - All of Me", "Beyoncé - Crazy in Love", "Alicia Keys - Fallin'", "Usher - Yeah!",
-      "Chris Brown - Forever", "John Legend - Ordinary People", "Beyoncé - Halo", "Alicia Keys - If I Ain't Got You",
-      "Frank Ocean - Thinking Bout You", "SZA - Kill Bill", "Daniel Caesar - Best Part", "H.E.R. - Focus",
-      "The Weeknd - Earned It", "Khalid - Location", "Summer Walker - Girls Need Love", "Giveon - Heartbreak Anniversary"
+      "Chris Brown - Under The Influence", "Bryson Tiller - Don't", "Tory Lanez - LUV", "PinkPantheress - Boy's a liar",
+      "Brent Favre - Wasteland", "Steve Lacy - Dark Red", "Kali Uchis - telepatía", "Omar Apollo - Evergreen"
     ],
     indie: [
-      "Arctic Monkeys - 505", "Tame Impala - The Less I Know The Better", "Foster the People - Pumped Up Kicks",
-      "MGMT - Electric Feel", "Alt-J - Left Hand Free", "Glass Animals - Gooey", "The Strokes - Last Nite",
+      "Arctic Monkeys - 505", "Tame Impala - The Less I Know The Better", "Glass Animals - Heat Waves",
+      "Foster the People - Pumped Up Kicks", "MGMT - Electric Feel", "Alt-J - Left Hand Free", "The Strokes - Last Nite",
       "Vampire Weekend - A-Punk", "Phoenix - 1901", "Two Door Cinema Club - What You Know",
-      "Cage the Elephant - Come a Little Closer", "Portugal. The Man - Feel It Still"
+      "Cage the Elephant - Come a Little Closer", "Portugal. The Man - Feel It Still", "Mac DeMarco - Chamber of Reflection",
+      "Beach House - Space Song", "Tame Impala - Borderline", "The 1975 - Somebody Else", "Clairo - Pretty Girl",
+      "Rex Orange County - Loving Is Easy", "Boy Pablo - Everytime", "Cuco - Lo Que Siento"
     ],
     electronic: [
-      "Calvin Harris - Feel So Close", "David Guetta - Titanium", "Avicii - Wake Me Up", "Skrillex - Bangarang",
-      "Deadmau5 - Ghosts 'n' Stuff", "Tiësto - Adagio for Strings", "Martin Garrix - Animals", "Diplo - Revolution",
-      "Flume - Never Be Like You", "ODESZA - Say My Name", "Disclosure - Latch", "Justice - D.A.N.C.E."
+      "Calvin Harris - Miracle", "Swedish House Mafia - Don't You Worry Child", "Avicii - Wake Me Up", "David Guetta - I'm Good",
+      "Martin Garrix - Animals", "Tiësto - The Business", "Disclosure - Latch", "ODESZA - Say My Name",
+      "Flume - Never Be Like You", "Deadmau5 - Ghosts 'n' Stuff", "Skrillex - Bangarang", "Justice - D.A.N.C.E.",
+      "Porter Robinson - Language", "Madeon - All My Friends", "Zedd - Clarity", "Diplo - Revolution",
+      "Calvin Harris - Feel So Close", "Swedish House Mafia - Greyhound", "Avicii - Levels", "Martin Garrix - High on Life"
     ]
   },
   spanish: {
