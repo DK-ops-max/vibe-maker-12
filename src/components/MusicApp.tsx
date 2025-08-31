@@ -248,8 +248,7 @@ export const MusicApp = () => {
         <div className="relative z-10">
           <div className="flex items-center justify-between p-6">
             <div className="flex items-center gap-3">
-              <LogoPlaceholder className="w-10 h-10" />
-              <span className="text-2xl font-bold text-foreground">Loomi</span>
+              <LogoPlaceholder className="w-16 h-16" />
             </div>
             {user ? (
               <div className="flex items-center gap-3">
@@ -429,8 +428,7 @@ export const MusicApp = () => {
         <div className="relative max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <LogoPlaceholder className="w-8 h-8" />
-              <span className="text-xl font-bold text-foreground">Loomi</span>
+              <LogoPlaceholder className="w-12 h-12" />
             </div>
             <div className="flex items-center gap-4">
               {user && (
