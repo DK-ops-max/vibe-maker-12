@@ -1,4 +1,4 @@
-import loomiLogo from "@/assets/loomi-logo.png";
+const loomiLogo = "/lovable-uploads/515e3055-0b4a-4c92-94cd-6382070e77e0.png";
 
 interface LogoPlaceholderProps {
   className?: string;
