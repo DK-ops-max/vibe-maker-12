@@ -3,13 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const generatePlaylistsWithOpenAI = async (likedSongs: string[]): Promise<GeneratedPlaylist[]> => {
   try {
-    console.log('Calling Supabase edge function for playlist generation...');
+    console.log('Calling Supabase edge function for playlist generation...', likedSongs);
     
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('Current user:', user?.id || 'Not logged in');
     
+    console.log('Invoking generate-playlists function...');
     const { data, error } = await supabase.functions.invoke('generate-playlists', {
       body: { likedSongs }
     });
+
+    console.log('Function response:', { data, error });
 
     if (error) {
       console.error('Supabase function error:', error);
