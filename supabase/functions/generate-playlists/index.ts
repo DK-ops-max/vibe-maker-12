@@ -16,49 +16,53 @@ async function generatePersonalizedPlaylists(likedSongs: string[]) {
     throw new Error('OpenAI API key not configured');
   }
   
-  // Create a detailed prompt based on user's music taste
-  const prompt = `Analyze these liked songs and create 5 personalized playlists with exactly 20 songs each:
+  // Improved GPT prompt for playlist generation
+  const prompt = `
+You are a professional music curator.  
+Analyze the following liked songs and then generate 5 personalized playlists with exactly 20 unique songs each.  
 
 LIKED SONGS:
 ${likedSongs.map(song => `- ${song}`).join('\n')}
 
-Based on the user's music taste from their liked songs, generate 5 playlists:
-1. "Mix" - A diverse mix matching their overall taste
-2. "Focus" - Calmer songs for concentration 
-3. "Motivation" - Energetic songs for productivity
-4. "Emotional" - Deeper, more emotional tracks
-5. "Workout" - High-energy songs for exercise
+Guidelines:
+- Base all choices on the user's liked songs (style, genre, mood, tempo).  
+- Avoid repeating songs across playlists.  
+- Include a balance of familiar artists and a few fresh but related discoveries.  
+- Each playlist must have its own distinct mood/energy, but still align with the user's taste.  
+- Give each playlist a short 1–2 sentence description explaining why these songs were chosen.  
 
-For each playlist, recommend 20 real songs (Artist - Song Title format) that match:
-- The user's preferred genres and artists
-- Similar vibes to their liked songs
-- The specific mood of each playlist category
+Playlists to create:
+1. **Mix** – A diverse blend reflecting the user's overall taste.  
+2. **Focus** – Calmer, smoother tracks ideal for concentration and studying.  
+3. **Motivation** – Upbeat and energetic songs to boost productivity.  
+4. **Emotional** – Soulful, meaningful, or deeper tracks for reflection.  
+5. **Workout** – High-energy songs with strong rhythm for exercise.  
 
-Only recommend songs that actually exist by real artists. Prioritize popular/well-known songs when possible.
-
-Return ONLY a valid JSON array in this exact format:
-[
-  {
-    "category": "Mix",
-    "songs": ["Artist Name - Song Title", "Artist Name - Song Title", ...20 songs total]
+Output Format:
+Return the results in **structured JSON**:
+{
+  "Mix": {
+    "description": "Short description of why these songs were chosen",
+    "songs": ["Song - Artist", "Song - Artist", ...20 items]
   },
-  {
-    "category": "Focus", 
-    "songs": ["Artist Name - Song Title", "Artist Name - Song Title", ...20 songs total]
+  "Focus": {
+    "description": "Short description of why these songs were chosen",
+    "songs": ["Song - Artist", "Song - Artist", ...20 items]
   },
-  {
-    "category": "Motivation",
-    "songs": ["Artist Name - Song Title", "Artist Name - Song Title", ...20 songs total]
+  "Motivation": {
+    "description": "Short description of why these songs were chosen",
+    "songs": ["Song - Artist", "Song - Artist", ...20 items]
   },
-  {
-    "category": "Emotional",
-    "songs": ["Artist Name - Song Title", "Artist Name - Song Title", ...20 songs total]
+  "Emotional": {
+    "description": "Short description of why these songs were chosen",
+    "songs": ["Song - Artist", "Song - Artist", ...20 items]
   },
-  {
-    "category": "Workout",
-    "songs": ["Artist Name - Song Title", "Artist Name - Song Title", ...20 songs total]
+  "Workout": {
+    "description": "Short description of why these songs were chosen",
+    "songs": ["Song - Artist", "Song - Artist", ...20 items]
   }
-]`;
+}
+`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -93,20 +97,27 @@ Return ONLY a valid JSON array in this exact format:
     console.log('AI response received:', aiResponse.substring(0, 200) + '...');
     
     // Parse AI response
-    let playlists;
+    let playlistsData;
     try {
-      // Clean up the response to extract JSON
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+      // Clean up the response to extract JSON object
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No valid JSON found in AI response');
       }
       
-      playlists = JSON.parse(jsonMatch[0]);
+      playlistsData = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       console.error('AI response was:', aiResponse);
       throw new Error('Failed to parse AI recommendation response');
     }
+    
+    // Convert object format to array format expected by frontend
+    const playlists = Object.entries(playlistsData).map(([category, data]: [string, any]) => ({
+      category,
+      songs: data.songs || [],
+      description: data.description || ''
+    }));
     
     // Add metadata to playlists
     const generationId = Date.now();
