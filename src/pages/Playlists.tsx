@@ -3,10 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Play, ExternalLink, Music } from "lucide-react";
+import { ArrowLeft, Play, ExternalLink, Music, Save, Heart } from "lucide-react";
 import { GeneratedPlaylist, SpotifyTrack } from "@/types/music";
 import { searchMultipleSpotifyTracks } from "@/services/spotify";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Playlists() {
   const location = useLocation();
@@ -15,6 +16,8 @@ export default function Playlists() {
   const [playlists, setPlaylists] = useState<GeneratedPlaylist[]>([]);
   const [spotifyTracks, setSpotifyTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const state = location.state as { playlists: GeneratedPlaylist[] } | null;
@@ -82,6 +85,60 @@ export default function Playlists() {
     };
     return icons[category as keyof typeof icons] || "🎵";
   };
+
+  const handleSavePlaylists = async () => {
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save your playlists",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const promises = playlists.map(playlist => 
+        supabase.from('saved_playlists').insert({
+          user_id: user.id,
+          category: playlist.category,
+          songs: playlist.songs,
+          generated_at: playlist.generatedAt || new Date().toISOString()
+        })
+      );
+
+      await Promise.all(promises);
+      
+      toast({
+        title: "Playlists saved!",
+        description: "Your AI-generated playlists have been saved to your library",
+      });
+      
+      setShowSavePrompt(false);
+    } catch (error) {
+      console.error('Error saving playlists:', error);
+      toast({
+        title: "Error saving playlists",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    // Show save prompt after playlists are loaded and tracks are fetched
+    if (playlists.length > 0 && !isLoading) {
+      const timer = setTimeout(() => {
+        setShowSavePrompt(true);
+      }, 2000); // Show after 2 seconds to let user browse first
+      
+      return () => clearTimeout(timer);
+    }
+  }, [playlists.length, isLoading]);
 
   if (playlists.length === 0) {
     return (
@@ -213,6 +270,40 @@ export default function Playlists() {
             </TabsContent>
           ))}
         </Tabs>
+
+        {/* Save Confirmation Prompt */}
+        {showSavePrompt && (
+          <Card className="mt-8 p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Love these playlists?</h3>
+                  <p className="text-muted-foreground">Save them to your library to access anytime</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowSavePrompt(false)}
+                  disabled={isSaving}
+                >
+                  Maybe Later
+                </Button>
+                <Button
+                  onClick={handleSavePlaylists}
+                  disabled={isSaving}
+                  className="bg-gradient-primary hover:opacity-90"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSaving ? "Saving..." : "Save Playlists"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

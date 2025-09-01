@@ -26,10 +26,11 @@ ${likedSongs.map(song => `- ${song}`).join('\n')}
 
 Guidelines:
 - Base all choices on the user's liked songs (style, genre, mood, tempo).  
+- MUST include 3-5 of the user's actual liked songs in each playlist (distributed across different playlists).
 - Avoid repeating songs across playlists.  
 - Include a balance of familiar artists and a few fresh but related discoveries.  
 - Each playlist must have its own distinct mood/energy, but still align with the user's taste.  
-- Give each playlist a short 1–2 sentence description explaining why these songs were chosen.  
+- Give each playlist a short 1–2 sentence description explaining why these songs were chosen.
 
 Playlists to create:
 1. **Mix** – A diverse blend reflecting the user's overall taste.  
